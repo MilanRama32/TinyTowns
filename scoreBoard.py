@@ -34,10 +34,6 @@ def scoreBlue(rcard, board, score):
     return score
 
 def scoreGreen(gcard, board, score):
-    count = 0
-    for i in range(4):
-        for j in range(4):
-            if board[i,j] == 3:
-                count = count + 1
-    score = score + gcard.scoreSelf(count)
+    positions = gcard.getPos(board)
+    score = score + gcard.scoreSelf(positions)
     return score
