@@ -13,6 +13,10 @@ board - 4x4 matrix Key:
         6: Black Building
         7: Grey Building
         8: Pink Building
+
+        11: Warehouse with 1 resource
+        12: Warehouse with 2 resources
+        13: Warehouse with 3 resources
 '''
 
 

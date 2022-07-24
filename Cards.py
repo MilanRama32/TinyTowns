@@ -1,4 +1,7 @@
-from operator import index
+
+# TODO: 
+# change feeding to be friendly for temple
+# pink cards
 
 
 class Card(object):
@@ -18,6 +21,10 @@ class Card(object):
                 if board[i,j] == self.pos:
                     positions.append([i,j])
         return positions
+
+    def findAdjacent(board, pos):
+        adj = [board[max(0, pos[0]-1), pos[1]], board[min(3, pos[0]+1), pos[1]], board[pos[0], max(0, pos[1]-1)], board[pos[0], min(3, pos[1]+1)]]
+        return adj
     
         
 class Cottage(Card):
@@ -121,45 +128,191 @@ class Tavern(Card):
 
 #Orange Cards
 class Abbey(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Orange", n = "Abbey", p = 3, pCondition = "Not adjacent to Black, Green or Yellow", e = "None", num = 4)
+
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            adj = self.findAdjacent(pos, board)
+            if not (any(adj == 3) or any(adj == 5) or any(adj == 6)):
+                score += 3
+        return score
+            
 class Chapel(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Orange", n = "Chapel", p = 1, pCondition = "1 per fed cottage", e = "None", num = 4)
+
+    def scoreSelf(positions, board):
+        score = 0
+        for i in range(4):
+            for j in range(4):
+                if board[i,j] == 1:
+                    score += len(positions)
+        return score
+
 class Cloister(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Orange", n = "Cloister", p = 1, pCondition = "1 per Cloister in a corner", e = "None", num = 4)
+
+    def scoreSelf(positions, board):
+        scorePer = 0
+        for pos in positions:
+            if (pos[0] == 0 or pos[0] == 3) and (pos[1] == 0 or pos[1] == 3):
+                scorePer += 1
+        score = scorePer * len(positions)
+        return score
+
 class Temple(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Orange", n = "Temple", p = 4, pCondition = "Adjacent to 2 fed cottages", e = "None", num = 4)
+
+    def scoreSelf(self, postitions, board):
+        for pos in postitions:
+            adjs = self.findAdjacent(pos, board)
+            fedCottageCount = 0
+            for adji in adjs:
+                if adji == 1:
+                    fedCottageCount += 1
+            if fedCottageCount >= 2:
+                score += 4
+        return score
+
+            
 
 #Yellow Cards
 class Bakery(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Yellow", n = "Bakery", p = 3, pCondition = "Adjacent to Black or Red", e = "None", num = 5)
+
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            adj = self.findAdjacent(pos, board)
+            if (any(adj == 2) or any(adj == 6)):
+                score += 3
+        return score
+
 class Market(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Yellow", n = "Market", p = 1, pCondition = "1 Per Market in same row or column but not both", e = "None", num = 5)
+
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            inRow, inCol = 0
+            for i in range(4):
+                if board[pos[0], i] == 5:
+                    inRow += 1
+                if board[i, pos[0] == 5]:
+                    inCol += 1
+            score += max(inRow, inCol)
+        return score
+
 class Tailor(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Yellow", n = "Tailor", p = 1, pCondition = "1 point + 1 extra Per Tailor in one of the center 4 squares", e = "None", num = 5)
+
+    def scoreSelf(self, positions, board):
+        scorePer = 1
+        for pos in positions:
+            if (pos[0] == 1 or pos[0] == 2) and (pos[1] == 1 or pos[1] == 2):
+                scorePer += 1
+        score = scorePer * len(positions)
+        return score
+        
 class Theatre(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Yellow", n = "Theatre", p = 1, pCondition = "1 point per other unique building type in the same row and column", e = "None", num = 5)
+
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            rowColBuildings = []
+            for i in range(4):
+                if i != pos[1]:
+                    rowColBuildings.append(board[i, pos[1]])
+                if i != pos[0]:
+                    rowColBuildings.append(board[pos[0], i])
+            score += len(set(rowColBuildings))
+        return score
 
 #Black Cards
 class Bank(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Black", n = "Bank", p = 4, pCondition = None, e = "Can't place resource placed ontop of this building", num = 6)
+
+    def scoreSelf(positions, board):
+        score = 4 * len(positions)
+        return score
+
 class Factory(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Black", n = "Factory", p = 0, pCondition = None, e = "When the resource on this building is called, player may instead place another resource", num = 6)
+
+    def scoreSelf(positions, board):
+        score = 0
+        return score
+        
 class TradingPost(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Black", n = "Bank", p = 1, pCondition = None, e = "Treat as wild resource", num = 6)
+
+    def scoreSelf(positions, board):
+        score = len(positions)
+        return score
+
 class Warehouse(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Black", n = "Warehouse", p = -1, pCondition = "-1 point per resource stored here", e = "Can store resource or swap resource from here instead of placing it.", num = 6)
+
+    def scoreSelf(positions, board):
+        for pos in positions:
+            score += board[pos] - 10
+        return score
 
 #Grey Cards
 class Fountain(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Grey", n = "Fountain", p = 2, pCondition = "Adjacent to Grey", e = None, num = 7)
+        
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            adj = self.findAdjacent(pos, board)
+            if any(adj == 7):
+                score += 2
+        return score
+
 class Millstone(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Grey", n = "Millstone", p = 2, pCondition = "Adjacent to red or Yellow", e = None, num = 7)
+        
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            adj = self.findAdjacent(pos, board)
+            if (any(adj == 2) or any(adj == 5)):
+                score += 2
+        return score
+
 class Shed(Card):
     def __init__(self):
-        super().__init__("Grey", "Shed", 1, "None", "None", 7)
+        super().__init__(c = "Grey", n = "Shed", p = 1, pCondition = "None", e = "Can be placed anywhere in town", num = 7)
         
     def scoreSelf(positions):
         score = len(positions)
         return score
+
 class Well(Card):
-    pass
+    def __init__(self):
+        super().__init__(c = "Grey", n = "Well", p = 1, pCondition = "1 per adjacent Cottage", e = None, num = 7)
+        
+    def scoreSelf(self, positions, board):
+        score = 0
+        for pos in positions:
+            adjs = self.findAdjacent(pos, board)
+            for adji in adjs:
+                if adji == 0 or adji == 1:
+                    score += 1
+        return score
