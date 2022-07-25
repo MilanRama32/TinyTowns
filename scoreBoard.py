@@ -4,6 +4,7 @@ Calculates a players final score
 inputs:
 cards - array, set of cards corresponding to the buildings used. Order - (blue, red, green, orange, yellow, black, grey, pink)
 board - 4x4 matrix Key:
+        -1: no building
         0: unfed cottage
         1: fed cottage
         2: Red Building
@@ -23,8 +24,14 @@ board - 4x4 matrix Key:
 def scoreBoard(cards, board):
     
     score = 0
-    score = scoreBlue(cards(1), board, score)
-    score = scoreGreen(cards(2), board, score)
+    score = scoreBlue(cards[1], board, score)
+    for card in cards[2:]:
+        score = scoreCard(card, board, score)
+    for i in range(4):
+        for j in range(4):
+            if board[i,j]==-1:
+                score -= 1
+    return score
     
 def scoreBlue(rcard, board, score):
     for i in range(4):
@@ -37,7 +44,9 @@ def scoreBlue(rcard, board, score):
                 score = score + 3
     return score
 
-def scoreGreen(gcard, board, score):
-    positions = gcard.getPos(board)
-    score = score + gcard.scoreSelf(positions)
+def scoreCard(card, board, score):
+    positions = card.getPos(board)
+    score = score + card.scoreSelf(positions, board)
     return score
+
+
