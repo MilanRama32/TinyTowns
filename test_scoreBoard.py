@@ -77,5 +77,16 @@ def test_scoreBoard3():
     print("Score 2 should be 20")
     print(score2)
 
+def test_scoreBoard4():
+    cards = [Cottage(), Greenhouse(), Almshouse(), Cloister(), Tailor(), Warehouse(), Fountain()]
+
+    board1 = np.array([[0,7,2,7],
+                       [0,0,7,0],
+                       [0,7,0,0],
+                       [0,0,7,0]])
+    score1 = scoreBoard(cards, board1)
+    print("Score 1 should be 18")
+    print(score1)
+
 if __name__ == "__main__":
-        test_scoreBoard3()
+        test_scoreBoard4()

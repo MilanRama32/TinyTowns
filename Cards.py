@@ -1,8 +1,10 @@
 
 # TODO: 
-# Greenhouse
 # change feeding to be friendly for temple
 # pink cards
+
+
+import numpy as np
 
 
 class Card(object):
@@ -25,17 +27,29 @@ class Card(object):
                     positions.append([i,j])
         return positions
 
-    def findAdjacent(self, pos, board):
+    def findAdjacent(self, pos, board, returnPos = False):
         adj = []
+        positions = []
         if pos[0] > 0:
+            if returnPos:
+                positions.append([pos[0]-1, pos[1]])
             adj.append(board[pos[0]-1, pos[1]])
         if pos[0] < 3:
+            if returnPos:
+                positions.append([pos[0]+1, pos[1]])
             adj.append(board[pos[0]+1, pos[1]])
         if pos[1] > 0:
+            if returnPos:
+                positions.append([pos[0], pos[1]-1])
             adj.append(board[pos[0], pos[1]-1])
         if pos[1] < 3:
+            if returnPos:
+                positions.append([pos[0], pos[1]+1])
             adj.append(board[pos[0], pos[1]+1])
-        return adj
+        if returnPos:
+            return adj, positions
+        else:
+            return adj
     
         
 class Cottage(Card):
@@ -48,30 +62,73 @@ class Farm(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Farm", p = 0, pCondition = "None", e = "Feed 4", num = 2)
         
-    def feedBuildings(self, board, pos):
-        count = 0
-        for i in range(4):
-            for j in range(4):
-                if board[i,j] == 0:
-                    board[i,j] = 1
-                    count = count + 1
-                    if count == 4:
-                        break
-            if count == 4:
-                break
+    def feedBuildings(self, board, pos, cards):
+        if isinstance(cards[3], Temple):
+                pass
+        else:
+            count = 0
+            for i in range(4):
+                for j in range(4):
+                    if board[i,j] == 0:
+                        board[i,j] = 1
+                        count = count + 1
+                        if count == 4:
+                            break
+                if count == 4:
+                    break
         return board
 
 class Greenhouse(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Greenhouse", p = 0, pCondition = "None", e = "Feeds 1 Contiguous Group", num = 2)
         
-    def feedBuildings(self, board, pos):
-        pass
+    def feedBuildings(self, board, rPos, cards):
+        toFeedPos = Cottage().getPos(board)
+        if len(toFeedPos) > 0:
+            setIndicator = 1001
+            for pos in toFeedPos:
+                if board[pos[0], pos[1]] == 0:
+                    board[pos[0], pos[1]] = setIndicator
+                    board = self.recursiveSearchAdjacent(pos, board, setIndicator)
+                    setIndicator += 1
+            setIndicator = 1001
+            if isinstance(cards[3], Temple):
+                pass
+            else:
+                setSize = np.count_nonzero(board == setIndicator)
+                largestSetSize = setSize
+                largestSetIndicator = 1001 
+                while(setSize > 0):
+                    setIndicator += 1
+                    setSize = np.count_nonzero(board == setIndicator)
+                    if setSize > largestSetSize:
+                        largestSetSize = setSize
+                        largestSetIndicator = setIndicator
+                for i in range(4):
+                    for j in range(4):
+                        if board[i,j] == largestSetIndicator:
+                            board[i,j] = 1
+                        elif board[i,j] > 1000:
+                            board[i,j] = 0
+        return board
+
+    
+    def recursiveSearchAdjacent(self, pos, board, setIndicator):
+        adj, positions = self.findAdjacent(pos, board, returnPos=True)
+        for i in range(len(adj)):
+            if adj[i] == 0:
+                positioni = positions[i]
+                board[positioni[0], positioni[1]] = setIndicator
+                board = self.recursiveSearchAdjacent(positions[i], board, setIndicator)
+        return board
+
+            
+
 class Grainary(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Grainary", p = 0, pCondition = "None", e = "Feeds surrounding", num = 2)
         
-    def feedBuildings(self, board, pos):
+    def feedBuildings(self, board, pos, cards):
         for i in range(max(0, pos[0]-1), min(4, pos[0]+2)):
             for j in range(max(0, pos[1]-1), min(4, pos[1]+2)):
                 if board[i,j] == 0:
@@ -82,7 +139,7 @@ class Orchard(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Orchard", p = 0, pCondition = "None", e = "Feeds row and column", num = 2)
         
-    def feedBuildings(self, board, pos):
+    def feedBuildings(self, board, pos, cards):
         for i in range(4):
             if board[pos[0], i] == 0:
                 board[pos[0], i] = 1
@@ -94,19 +151,19 @@ class Orchard(Card):
 
 class Almshouse(Card):
     def __init__(self):
-        super().__init__(c = "Green", n = "Almshouse", p = [-1,5,-3,15,-5,26], pCondition = "Number in Town", e = "None", num = 3)
+        super().__init__(c = "Green", n = "Almshouse", p = [0,-1,5,-3,15,-5,26], pCondition = "Number in Town", e = "None", num = 3)
         
     def scoreSelf(self, positions, board):
         count = len(positions)
-        return self.points[min(count-1, 5)]
+        return self.points[min(count, 5)]
 
 class Tavern(Card):
     def __init__(self):
-        super().__init__(c = "Green", n = "Tavern", p = [2,5,9,14,20], pCondition = "Number in Town", e = "None", num = 3)
+        super().__init__(c = "Green", n = "Tavern", p = [0,2,5,9,14,20], pCondition = "Number in Town", e = "None", num = 3)
     
     def scoreSelf(self, positions, board):
         count = len(positions)
-        return self.points[min(count-1, 4)]
+        return self.points[min(count, 4)]
     
 class Inn(Card):
     def __init__(self):
