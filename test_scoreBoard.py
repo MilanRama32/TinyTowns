@@ -78,7 +78,7 @@ def test_scoreBoard3():
     print(score2)
 
 def test_scoreBoard4():
-    cards = [Cottage(), Greenhouse(), Almshouse(), Cloister(), Tailor(), Warehouse(), Fountain()]
+    cards = [Cottage(), Greenhouse(), Almshouse(), Temple(), Tailor(), Warehouse(), Fountain()]
 
     board1 = np.array([[0,7,2,7],
                        [0,0,7,0],
@@ -88,5 +88,32 @@ def test_scoreBoard4():
     print("Score 1 should be 18")
     print(score1)
 
+    board2 = np.array([[0,7,2,7],
+                       [0,0,4,4],
+                       [0,4,0,0],
+                       [0,0,7,0]])
+    score2 = scoreBoard(cards, board2)
+    print("Score 2 should be 22")
+    print(score2)
+
+    board3 = np.array([[0,7,2,4],
+                       [0,0,4,0],
+                       [0,7,0,0],
+                       [0,0,4,0]])
+    score3 = scoreBoard(cards, board3)
+    print("Score 3 should be 20")
+    print(score3)
+
+def test_scoreBoard5():
+    cards = [Cottage(), Farm(), Almshouse(), Temple(), Tailor(), Warehouse(), Fountain()]
+
+    board1 = np.array([[0,7,2,7],
+                       [0,0,7,0],
+                       [0,4,0,4],
+                       [7,0,7,0]])
+    score1 = scoreBoard(cards, board1)
+    print("Score 1 should be 20")
+    print(score1)
+
 if __name__ == "__main__":
-        test_scoreBoard4()
+        test_scoreBoard5()

@@ -1,11 +1,10 @@
 
 # TODO: 
-# change feeding to be friendly for temple
 # pink cards
 
 
 import numpy as np
-
+from itertools import combinations
 
 class Card(object):
     
@@ -56,60 +55,110 @@ class Cottage(Card):
     def __init__(self):
         super().__init__(c = "Blue", n = "Cottage", p = 3, pCondition = "Fed", e = None, num = 0)
   
+class Temple(Card):
+    def __init__(self):
+        super().__init__(c = "Orange", n = "Temple", p = 4, pCondition = "Adjacent to 2 fed cottages", e = "None", num = 4)
+
+    def scoreSelf(self, postitions, board):
+        score = 0
+        for pos in postitions:
+            adjs = self.findAdjacent(pos, board)
+            fedCottageCount = 0
+            for adji in adjs:
+                if adji == 1:
+                    fedCottageCount += 1
+            if fedCottageCount >= 2:
+                score += 4
+        return score 
 #Red cards      
 class Farm(Card):
     
     def __init__(self):
         super().__init__(c = "Red", n = "Farm", p = 0, pCondition = "None", e = "Feed 4", num = 2)
         
-    def feedBuildings(self, board, pos, cards):
-        if isinstance(cards[3], Temple):
-                pass
+    def feedBuildings(self, board, positions, cards):
+        orangePos = Temple().getPos(board)
+        if isinstance(cards[3], Temple) and len(orangePos) > 0 and (len(Cottage().getPos(board)) > len(positions) * 4):
+            numBuildingsFed = len(positions) * 4
+            maxPoints = 0
+            boardStates = [board]
+            for comb in combinations(Cottage().getPos(board), r = numBuildingsFed):
+                boardTemp = board.copy()
+                for pos in comb:
+                    boardTemp[pos[0], pos[1]] = 1
+                points = numBuildingsFed * 3 + Temple().scoreSelf(orangePos, boardTemp)
+                if points > maxPoints:
+                    maxPoints = points
+                    boardStates.append(boardTemp)
+            board = boardStates[-1].copy()
         else:
-            count = 0
-            for i in range(4):
-                for j in range(4):
-                    if board[i,j] == 0:
-                        board[i,j] = 1
-                        count = count + 1
-                        if count == 4:
-                            break
-                if count == 4:
-                    break
+            for pos in positions:
+                count = 0
+                for i in range(4):
+                    for j in range(4):
+                        if board[i,j] == 0:
+                            board[i,j] = 1
+                            count = count + 1
+                            if count == 4:
+                                break
+                    if count == 4:
+                        break
         return board
 
 class Greenhouse(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Greenhouse", p = 0, pCondition = "None", e = "Feeds 1 Contiguous Group", num = 2)
         
-    def feedBuildings(self, board, rPos, cards):
-        toFeedPos = Cottage().getPos(board)
-        if len(toFeedPos) > 0:
-            setIndicator = 1001
-            for pos in toFeedPos:
-                if board[pos[0], pos[1]] == 0:
-                    board[pos[0], pos[1]] = setIndicator
-                    board = self.recursiveSearchAdjacent(pos, board, setIndicator)
-                    setIndicator += 1
-            setIndicator = 1001
-            if isinstance(cards[3], Temple):
-                pass
-            else:
+    def feedBuildings(self, board, positions, cards):
+        for rpos in positions:
+            toFeedPos = Cottage().getPos(board)
+            if len(toFeedPos) > 0:
+                setIndicator = 1001
+                for pos in toFeedPos:
+                    if board[pos[0], pos[1]] == 0:
+                        board[pos[0], pos[1]] = setIndicator
+                        board = self.recursiveSearchAdjacent(pos, board, setIndicator)
+                        setIndicator += 1
+                setIndicator = 1001
                 setSize = np.count_nonzero(board == setIndicator)
-                largestSetSize = setSize
-                largestSetIndicator = 1001 
-                while(setSize > 0):
-                    setIndicator += 1
-                    setSize = np.count_nonzero(board == setIndicator)
-                    if setSize > largestSetSize:
-                        largestSetSize = setSize
-                        largestSetIndicator = setIndicator
-                for i in range(4):
-                    for j in range(4):
-                        if board[i,j] == largestSetIndicator:
-                            board[i,j] = 1
-                        elif board[i,j] > 1000:
-                            board[i,j] = 0
+                if isinstance(cards[3], Temple) and len(Temple().getPos(board)) > 0: 
+                    boardStates = [board]
+                    maxPoints = 0
+                    while(setSize > 0):
+                        boardTemp = board.copy()
+                        points = 0
+                        for i in range(4):
+                            for j in range(4):
+                                if boardTemp[i,j] == setIndicator:
+                                    boardTemp[i,j] = 1
+                                    points += 3
+                        templePos = Temple().getPos(board)
+                        points = points +  Temple().scoreSelf(templePos, boardTemp)
+                        if (points > maxPoints):
+                            maxPoints = points
+                            boardStates.append(boardTemp)
+                        setIndicator += 1
+                        setSize = np.count_nonzero(board == setIndicator)
+                    board = boardStates[-1].copy()
+                    for i in range(4):
+                        for j in range(4):
+                            if board[i,j] > 1000:
+                                board[i,j] = 0
+                else:
+                    largestSetSize = setSize
+                    largestSetIndicator = 1001 
+                    while(setSize > 0):
+                        setIndicator += 1
+                        setSize = np.count_nonzero(board == setIndicator)
+                        if setSize > largestSetSize:
+                            largestSetSize = setSize
+                            largestSetIndicator = setIndicator
+                    for i in range(4):
+                        for j in range(4):
+                            if board[i,j] == largestSetIndicator:
+                                board[i,j] = 1
+                            elif board[i,j] > 1000:
+                                board[i,j] = 0
         return board
 
     
@@ -128,23 +177,25 @@ class Grainary(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Grainary", p = 0, pCondition = "None", e = "Feeds surrounding", num = 2)
         
-    def feedBuildings(self, board, pos, cards):
-        for i in range(max(0, pos[0]-1), min(4, pos[0]+2)):
-            for j in range(max(0, pos[1]-1), min(4, pos[1]+2)):
-                if board[i,j] == 0:
-                    board[i,j] = 1
+    def feedBuildings(self, board, positions, cards):
+        for pos in positions:
+            for i in range(max(0, pos[0]-1), min(4, pos[0]+2)):
+                for j in range(max(0, pos[1]-1), min(4, pos[1]+2)):
+                    if board[i,j] == 0:
+                        board[i,j] = 1
         return board
 
 class Orchard(Card):
     def __init__(self):
         super().__init__(c = "Red", n = "Orchard", p = 0, pCondition = "None", e = "Feeds row and column", num = 2)
         
-    def feedBuildings(self, board, pos, cards):
-        for i in range(4):
-            if board[pos[0], i] == 0:
-                board[pos[0], i] = 1
-            if board[i, pos[1]] == 0:
-                board[i, pos[1]] = 1
+    def feedBuildings(self, board, positions, cards):
+        for pos in positions:
+            for i in range(4):
+                if board[pos[0], i] == 0:
+                    board[pos[0], i] = 1
+                if board[i, pos[1]] == 0:
+                    board[i, pos[1]] = 1
         return board
 
 #Green Cards
@@ -231,20 +282,7 @@ class Cloister(Card):
         score = scorePer * len(positions)
         return score
 
-class Temple(Card):
-    def __init__(self):
-        super().__init__(c = "Orange", n = "Temple", p = 4, pCondition = "Adjacent to 2 fed cottages", e = "None", num = 4)
 
-    def scoreSelf(self, postitions, board):
-        for pos in postitions:
-            adjs = self.findAdjacent(pos, board)
-            fedCottageCount = 0
-            for adji in adjs:
-                if adji == 1:
-                    fedCottageCount += 1
-            if fedCottageCount >= 2:
-                score += 4
-        return score
 
             
 
