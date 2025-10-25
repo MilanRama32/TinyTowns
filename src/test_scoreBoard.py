@@ -115,9 +115,29 @@ def test_scoreBoard5():
     print("Score 1 should be 20")
     print(f'{score1} \n {sum(score1)}')
 
+def test_scoreBoard6():
+    cards = [Cottage(), Orchard(), Almshouse(), Cloister(), Tailor(), Warehouse(), Fountain()]
+
+    board1 = np.array([[4,4,5,4],
+                       [0,5,5,3],
+                       [7,5,0,12],
+                       [7,0,8,4]])
+    score1 = scoreBoard(cards, board1, landmark=Grand_Mausoleum_of_the_Rodina())
+    print("Score 1 should be 38")
+    print(f'{score1} \n {sum(score1)}')
+
+    board2 = np.array([[4,-1,-1,4],
+                       [0,-1,5,3],
+                       [7,8,0,12],
+                       [7,0,2,4]])
+    score2 = scoreBoard(cards, board2, landmark=Cathedral_of_Caterina())
+    print("Score 2 should be 20")
+    print(f'{score2} \n {sum(score2)}')
+
 if __name__ == "__main__":
     test_scoreBoard1()
     test_scoreBoard2()
     test_scoreBoard3()
     test_scoreBoard4()
     test_scoreBoard5()
+    test_scoreBoard6()

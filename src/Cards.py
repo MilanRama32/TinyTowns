@@ -6,6 +6,15 @@
 import numpy as np
 from itertools import combinations
 
+def homogenizeBoard(board):
+    for i in range(4):
+        for j in range(4):
+            if board[i,j] == 0:
+                board[i,j] = 1
+            elif board[i,j] == 12 or board[i,j] == 13:
+                board[i,j] = 11
+    return board
+
 class Card(object):
     
     def __init__(self, c, n, p, pCondition, e, num):
@@ -50,31 +59,25 @@ class Card(object):
         else:
             return adj
     
-        
+    def scoreSelf(self, positions, board):
+        if isinstance(self.points, list):
+            count = len(positions)
+            return self.points[min(count, len(self.points))]
+        elif isinstance(self.points, int):
+            return self.points * len(positions)
+        else:
+            return 0
+
+#Blue Cards
 class Cottage(Card):
     def __init__(self):
         super().__init__(c = "Blue", n = "Cottage", p = 3, pCondition = "Fed", e = None, num = 0)
-  
-class Temple(Card):
-    def __init__(self):
-        super().__init__(c = "Orange", n = "Temple", p = 4, pCondition = "Adjacent to 2 fed cottages", e = "None", num = 4)
 
-    def scoreSelf(self, postitions, board):
-        score = 0
-        for pos in postitions:
-            adjs = self.findAdjacent(pos, board)
-            fedCottageCount = 0
-            for adji in adjs:
-                if adji == 1:
-                    fedCottageCount += 1
-            if fedCottageCount >= 2:
-                score += 4
-        return score 
 #Red cards      
 class Farm(Card):
     
     def __init__(self):
-        super().__init__(c = "Red", n = "Farm", p = 0, pCondition = "None", e = "Feed 4", num = 2)
+        super().__init__(c = "Red", n = "Farm", p = 0, pCondition = None, e = "Feed 4", num = 2)
         
     def feedBuildings(self, board, positions, cards):
         orangePos = Temple().getPos(board)
@@ -107,7 +110,7 @@ class Farm(Card):
 
 class Greenhouse(Card):
     def __init__(self):
-        super().__init__(c = "Red", n = "Greenhouse", p = 0, pCondition = "None", e = "Feeds 1 Contiguous Group", num = 2)
+        super().__init__(c = "Red", n = "Greenhouse", p = 0, pCondition = None, e = "Feeds 1 Contiguous Group", num = 2)
         
     def feedBuildings(self, board, positions, cards):
         for rpos in positions:
@@ -161,7 +164,6 @@ class Greenhouse(Card):
                                 board[i,j] = 0
         return board
 
-    
     def recursiveSearchAdjacent(self, pos, board, setIndicator):
         adj, positions = self.findAdjacent(pos, board, returnPos=True)
         for i in range(len(adj)):
@@ -171,11 +173,9 @@ class Greenhouse(Card):
                 board = self.recursiveSearchAdjacent(positions[i], board, setIndicator)
         return board
 
-            
-
 class Grainary(Card):
     def __init__(self):
-        super().__init__(c = "Red", n = "Grainary", p = 0, pCondition = "None", e = "Feeds surrounding", num = 2)
+        super().__init__(c = "Red", n = "Grainary", p = 0, pCondition = None, e = "Feeds surrounding", num = 2)
         
     def feedBuildings(self, board, positions, cards):
         for pos in positions:
@@ -187,7 +187,7 @@ class Grainary(Card):
 
 class Orchard(Card):
     def __init__(self):
-        super().__init__(c = "Red", n = "Orchard", p = 0, pCondition = "None", e = "Feeds row and column", num = 2)
+        super().__init__(c = "Red", n = "Orchard", p = 0, pCondition = None, e = "Feeds row and column", num = 2)
         
     def feedBuildings(self, board, positions, cards):
         for pos in positions:
@@ -199,22 +199,13 @@ class Orchard(Card):
         return board
 
 #Green Cards
-
 class Almshouse(Card):
     def __init__(self):
         super().__init__(c = "Green", n = "Almshouse", p = [0,-1,5,-3,15,-5,26], pCondition = "Number in Town", e = "None", num = 3)
-        
-    def scoreSelf(self, positions, board):
-        count = len(positions)
-        return self.points[min(count, 5)]
 
 class Tavern(Card):
     def __init__(self):
         super().__init__(c = "Green", n = "Tavern", p = [0,2,5,9,14,20], pCondition = "Number in Town", e = "None", num = 3)
-    
-    def scoreSelf(self, positions, board):
-        count = len(positions)
-        return self.points[min(count, 4)]
     
 class Inn(Card):
     def __init__(self):
@@ -238,12 +229,12 @@ class Inn(Card):
         score = 3* sum(rowsDuped and colsDuped)
         return score
     
-class FeastHall(Card):
+class FeastHall(Card): #TODO
     def __init__(self):
-        super().__init__(c = "Green", n = "Tavern", p = 2, pCondition = "+1 if you have more than the person on your right", e = "None", num = 3)
-    
-    def scoreSelf(self, positions, board):
-        return 2*len(positions)
+        super().__init__(c = "Green", n = "Feast Hall", p = 2, pCondition = "+1 if you have more than the person on your right", e = "None", num = 3)
+
+    # def scoreSelf(self, positions, board):
+    #     return 2*len(positions)
 
 #Orange Cards
 class Abbey(Card):
@@ -282,10 +273,22 @@ class Cloister(Card):
         score = scorePer * len(positions)
         return score
 
+class Temple(Card):
+    def __init__(self):
+        super().__init__(c = "Orange", n = "Temple", p = 4, pCondition = "Adjacent to 2 fed cottages", e = "None", num = 4)
 
-
+    def scoreSelf(self, postitions, board):
+        score = 0
+        for pos in postitions:
+            adjs = self.findAdjacent(pos, board)
+            fedCottageCount = 0
+            for adji in adjs:
+                if adji == 1:
+                    fedCottageCount += 1
+            if fedCottageCount >= 2:
+                score += 4
+        return score 
             
-
 #Yellow Cards
 class Bakery(Card):
     def __init__(self):
@@ -332,12 +335,7 @@ class Theatre(Card):
         super().__init__(c = "Yellow", n = "Theatre", p = 1, pCondition = "1 point per other unique building type in the same row and column", e = "None", num = 5)
 
     def scoreSelf(self, positions, board):
-        for i in range(4):
-            for j in range(4):
-                if board[i,j] == 0:
-                    board[i,j] = 1
-                elif board[i,j] == 12 or board[i,j] == 13:
-                    board[i,j] = 11
+        board = homogenizeBoard(board)
         score = 0
         for pos in positions:
             rowColBuildings = []
@@ -354,25 +352,13 @@ class Bank(Card):
     def __init__(self):
         super().__init__(c = "Black", n = "Bank", p = 4, pCondition = None, e = "Can't place resource placed ontop of this building", num = 6)
 
-    def scoreSelf(self, positions, board):
-        score = 4 * len(positions)
-        return score
-
 class Factory(Card):
     def __init__(self):
         super().__init__(c = "Black", n = "Factory", p = 0, pCondition = None, e = "When the resource on this building is called, player may instead place another resource", num = 6)
-
-    def scoreSelf(self, positions, board):
-        score = 0
-        return score
         
 class TradingPost(Card):
     def __init__(self):
         super().__init__(c = "Black", n = "Bank", p = 1, pCondition = None, e = "Treat as wild resource", num = 6)
-
-    def scoreSelf(self, positions, board):
-        score = len(positions)
-        return score
 
 class Warehouse(Card):
     def __init__(self):
@@ -411,11 +397,7 @@ class Millstone(Card):
 
 class Shed(Card):
     def __init__(self):
-        super().__init__(c = "Grey", n = "Shed", p = 1, pCondition = "None", e = "Can be placed anywhere in town", num = 7)
-        
-    def scoreSelf(self, positions, board):
-        score = len(positions)
-        return score
+        super().__init__(c = "Grey", n = "Shed", p = 1, pCondition = None, e = "Can be placed anywhere in town", num = 7)
 
 class Well(Card):
     def __init__(self):
@@ -429,3 +411,122 @@ class Well(Card):
                 if adji == 0 or adji == 1:
                     score += 1
         return score
+
+#Pink Cards
+
+class Architects_Guild(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Architect's Guild", p = 1, pCondition = None, e = "When constructed, replace up to 2 buildings in your town with any other building types.", num = 8)
+    
+class Archive_of_the_Second_Age(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Archive of the Second Age", p = 1, pCondition = "1 per unique building type (other than this) in your town", e = None, num = 8)
+        
+    def scoreSelf(self, positions, board):
+        board = homogenizeBoard(board)
+        buildingTypes = []
+        for i in range(4):
+            for j in range(4):
+                if board[i,j] not in buildingTypes and board[i,j] != 8 and board[i,j] != -1:
+                    buildingTypes.append(board[i,j])
+        score = len(buildingTypes)
+        return score
+    
+class Barrett_Castle(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Barrett Castle", p = 5, pCondition = "Fed", e = None, num = 8)
+        
+    def scoreSelf(self, positions, board): #TODO
+        pass
+
+class Cathedral_of_Caterina(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Cathedral of Caterina", p = 2, pCondition = None, e = "Empty squares are worth 0 (instead of -1)", num = 8)
+
+    def scoreSelf(self, positions, board):
+        score = 2
+        for i in range(4):
+            for j in range(4):
+                if board[i,j]==-1:
+                    score += 1
+        return score
+    
+class Fort_Ironweed(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Fort Ironweed", p = 7, pCondition = None, e = "Once Built, you no longer take turns as the Master Builder", num = 8)
+
+class Grand_Mausoleum_of_the_Rodina(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Grand Mauseleum of the Rodina", p = 0, pCondition = "3 per unfed cottage", e = None, num = 8)
+
+    def scoreSelf(self, positions, board):
+        score = 0
+        for i in range(4):
+            for j in range(4):
+                if board[i,j] == 0:
+                    score += 3
+        return score
+    
+class Grove_University(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Grove University", p = 3, pCondition = "When built, immediately place a building on an empty square in your town", e = None, num = 8)
+
+class Mandras_Palace(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Mandras Palace", p = 2, pCondition = "2 Points for each unique adjacent building type", e = None, num = 8)
+
+    def scoreSelf(self, positions, board):
+        adj = self.findAdjacent(positions[0], board)
+        uniqueTypes = set()
+        for a in adj:
+            if a != -1:
+                uniqueTypes.add(a)
+        score = 2 * len(uniqueTypes)
+        return score
+    
+class Obelisk_of_the_Crescent(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Obelisk of the Crescent", p = 0, pCondition = None, e = "You may place all future buildings on any empty square in your town", num = 8)
+
+class Opaleyes_Watch(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Opaleye's Watch", p = 0, pCondition = None, e = "Immediately place 3 unique buildings on this card. Whenever a player on the left or right of you constructs 1 of those buildings, take the building from here and place it on an empty square in your town.", num = 8)
+
+class Shrine_of_the_Elder_Tree(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Shrine of the Elder Tree", p = [1,2,3,4,5,8], pCondition = "Points based on the number of buildings in your town when constructed", e = None, num = 8)
+    
+    def scoreSelf(self, positions, board): #TODO
+        pass
+
+class Silva_Forum(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Silva Forum", p = 1, pCondition = "1 +1 for each building in your largest contiguous group of buildings of the same type in your town", e = None, num = 8)
+
+    def scoreSelf(self, positions, board): #TODO
+        pass
+
+class The_Sky_Baths(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "The Sky Baths", p = 2, pCondition = "2 points for each building type your town is missing", e = None, num = 8)
+
+    def scoreSelf(self, positions, board):
+        board = homogenizeBoard(board)
+        buildingTypes = set()
+        for i in range(4):
+            for j in range(4):
+                if board[i,j] != -1 and board[i,j] != 8:
+                    buildingTypes.add(board[i,j])
+        score = 2 * (7 - len(buildingTypes))
+        return score
+    
+class The_Starloom(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "The Starloom", p = [6,3,2,0,0,0], pCondition = "Points based on when you complete your town", e = None, num = 8)
+
+    def scoreSelf(self, positions, board): #TODO
+        pass
+
+class Statue_of_the_Bondmaker(Card):
+    def __init__(self):
+        super().__init__(c = "Pink", n = "Statue of the Bondmaker", p = 0, pCondition = None, e = "When another player names a resource, you may choose to place it on a square with a cottage. Each of your Cottages can hold 1 resource.", num = 8)

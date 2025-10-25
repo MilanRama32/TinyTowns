@@ -21,7 +21,7 @@ board - 4x4 matrix Key:
 '''
 
 
-def scoreBoard(cards, board):
+def scoreBoard(cards, board, landmark=None):
     
     # initialize score list
     scores = [0]
@@ -32,6 +32,11 @@ def scoreBoard(cards, board):
     # other card scoring
     for card in cards[2:]:
         scores.append(scoreCard(card, board))
+
+    if landmark is not None:
+        scores.append(scoreCard(landmark, board))
+    else:
+        scores.append(0)
 
     # empty spaces negative points
     scores.append(0)
@@ -56,5 +61,3 @@ def scoreCard(card, board):
     positions = card.getPos(board)
     score = card.scoreSelf(positions, board)
     return score
-
-
