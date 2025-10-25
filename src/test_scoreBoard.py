@@ -29,15 +29,15 @@ def test_scoreBoard1():
                        [5,5,5,2]])
     score1 = scoreBoard(cards, board1)
     print("Score 1 should be 31")
-    print(score1)
+    print(f'{score1} \n {sum(score1)}')
 
     board2 = np.array([[3,0,2,5],
                        [3,7,0,5],
                        [3,0,7,5],
                        [3,3,0,5]])
     score2 = scoreBoard(cards, board2)
-    print("Score 2 should be 54")
-    print(score2)
+    print("Score 2 should be 48")
+    print(f'{score2} \n {sum(score2)}')
 
 def test_scoreBoard2():
     cards = [Cottage(), Grainary(), Inn(), Chapel(), Theatre(), Bank(), Millstone()]
@@ -48,7 +48,7 @@ def test_scoreBoard2():
                        [0,3,0,0]])
     score1 = scoreBoard(cards, board1)
     print("Score 1 should be 38")
-    print(score1)
+    print(f'{score1} \n {sum(score1)}')
 
     board2 = np.array([[7,5,4,3],
                        [0,0,-1,5],
@@ -56,7 +56,7 @@ def test_scoreBoard2():
                        [0,3,0,0]])
     score2 = scoreBoard(cards, board2)
     print("Score 2 should be 35")
-    print(score2)
+    print(f'{score2} \n {sum(score2)}')
 
 def test_scoreBoard3():
     cards = [Cottage(), Orchard(), Almshouse(), Cloister(), Tailor(), Warehouse(), Fountain()]
@@ -67,7 +67,7 @@ def test_scoreBoard3():
                        [7,0,2,4]])
     score1 = scoreBoard(cards, board1)
     print("Score 1 should be 35")
-    print(score1)
+    print(f'{score1} \n {sum(score1)}')
 
     board2 = np.array([[11,4,5,4],
                        [-1,7,5,3],
@@ -75,7 +75,7 @@ def test_scoreBoard3():
                        [7,0,2,4]])
     score2 = scoreBoard(cards, board2)
     print("Score 2 should be 20")
-    print(score2)
+    print(f'{score2} \n {sum(score2)}')
 
 def test_scoreBoard4():
     cards = [Cottage(), Greenhouse(), Almshouse(), Temple(), Tailor(), Warehouse(), Fountain()]
@@ -86,7 +86,7 @@ def test_scoreBoard4():
                        [0,0,7,0]])
     score1 = scoreBoard(cards, board1)
     print("Score 1 should be 18")
-    print(score1)
+    print(f'{score1} \n {sum(score1)}')
 
     board2 = np.array([[0,7,2,7],
                        [0,0,4,4],
@@ -94,7 +94,7 @@ def test_scoreBoard4():
                        [0,0,7,0]])
     score2 = scoreBoard(cards, board2)
     print("Score 2 should be 22")
-    print(score2)
+    print(f'{score2} \n {sum(score2)}')
 
     board3 = np.array([[0,7,2,4],
                        [0,0,4,0],
@@ -102,7 +102,7 @@ def test_scoreBoard4():
                        [0,0,4,0]])
     score3 = scoreBoard(cards, board3)
     print("Score 3 should be 20")
-    print(score3)
+    print(f'{score3} \n {sum(score3)}')
 
 def test_scoreBoard5():
     cards = [Cottage(), Farm(), Almshouse(), Temple(), Tailor(), Warehouse(), Fountain()]
@@ -113,7 +113,11 @@ def test_scoreBoard5():
                        [7,0,7,0]])
     score1 = scoreBoard(cards, board1)
     print("Score 1 should be 20")
-    print(score1)
+    print(f'{score1} \n {sum(score1)}')
 
 if __name__ == "__main__":
-        test_scoreBoard5()
+    test_scoreBoard1()
+    test_scoreBoard2()
+    test_scoreBoard3()
+    test_scoreBoard4()
+    test_scoreBoard5()

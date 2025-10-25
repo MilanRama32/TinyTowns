@@ -23,17 +23,27 @@ board - 4x4 matrix Key:
 
 def scoreBoard(cards, board):
     
-    score = 0
-    score, board = scoreBlue(cards[1], board, score, cards)
+    # initialize score list
+    scores = [0]
+
+    # blue card scoring
+    scores[0], board = scoreBlue(board, cards)
+
+    # other card scoring
     for card in cards[2:]:
-        score = scoreCard(card, board, score)
+        scores.append(scoreCard(card, board))
+
+    # empty spaces negative points
+    scores.append(0)
     for i in range(4):
         for j in range(4):
             if board[i,j]==-1:
-                score -= 1
-    return score
+                scores[-1] -= 1
+    return scores
     
-def scoreBlue(rcard, board, score, cards):
+def scoreBlue(board, cards):
+    rcard = cards[1]
+    score = 0
     rPositions = rcard.getPos(board)
     board = rcard.feedBuildings(board, rPositions, cards)
     for i in range(4):
@@ -42,9 +52,9 @@ def scoreBlue(rcard, board, score, cards):
                 score = score + 3
     return score, board
 
-def scoreCard(card, board, score):
+def scoreCard(card, board):
     positions = card.getPos(board)
-    score = score + card.scoreSelf(positions, board)
+    score = card.scoreSelf(positions, board)
     return score
 
 
