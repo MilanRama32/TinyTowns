@@ -128,10 +128,10 @@ def test_scoreBoard6():
 
     board2 = np.array([[4,-1,-1,4],
                        [0,-1,5,3],
-                       [7,8,0,12],
+                       [7,8,0,-1],
                        [7,0,2,4]])
     score2 = scoreBoard(cards, board2, landmark=Cathedral_of_Caterina())
-    print("Score 2 should be 20")
+    print("Score 2 should be 22")
     print(f'{score2} \n {sum(score2)}')
 
 if __name__ == "__main__":

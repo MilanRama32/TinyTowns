@@ -25,7 +25,7 @@ class Card(object):
         self.effect = e
         self.boardNum = num
         
-    def getPos(self, board):
+    def getPos(self, board):  
         positions = []
         for i in range(4):
             for j in range(4):
